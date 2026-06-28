@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Palavra de Deus — Quiz Bíblico</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#f5a623;
+  --gold-light:#ffd97d;
+  --navy:#0b1340;
+  --navy2:#111b55;
+  --blue:#1a3a8f;
+  --blue2:#2952cc;
+  --glow:rgba(245,166,35,0.35);
+  --text:#ffffff;
+  --muted:rgba(255,255,255,0.6);
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);overflow:hidden}
+
+/* ── STARS BG ── */
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d) ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:.1}to{opacity:.9}}
+
+/* ── VIEWS ── */
+.view{display:none;position:fixed;inset:0;z-index:1;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.view.active{display:flex}
+
+/* ══ HOME ══ */
+#view-home{background:linear-gradient(160deg,#0b1340 0%,#111b55 60%,#0d2060 100%)}
+
+.home-title{font-family:'Cinzel',serif;font-size:32px;font-weight:900;text-align:center;line-height:1.1;
+  background:linear-gradient(135deg,#ffd97d,#f5a623,#fff8e0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:none;margin-bottom:6px}
+.home-sub{font-size:14px;color:var(--muted);margin-bottom:36px;text-align:center;letter-spacing:.04em}
+.score-badge{background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.3);border-radius:12px;
+  padding:10px 24px;margin-bottom:32px;font-size:13px;color:var(--gold-light);display:none}
+.score-badge span{font-weight:700;font-size:18px;color:var(--gold)}
+.btn-primary{background:linear-gradient(135deg,#f5a623,#e8920a);color:#0b1340;border:none;border-radius:14px;
+  padding:16px 40px;font-size:18px;font-weight:700;cursor:pointer;width:100%;max-width:320px;
+  box-shadow:0 4px 24px rgba(245,166,35,.4);font-family:'DM Sans',sans-serif;transition:transform .1s,box-shadow .1s}
+.btn-primary:active{transform:scale(.96);box-shadow:0 2px 12px rgba(245,166,35,.3)}
+.btn-secondary{background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:14px;
+  padding:13px 40px;font-size:16px;font-weight:600;cursor:pointer;width:100%;max-width:320px;margin-top:10px;
+  font-family:'DM Sans',sans-serif;transition:background .15s}
+.btn-secondary:active{background:rgba(255,255,255,.13)}
+.category-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:28px;max-width:340px}
+.cat-btn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:20px;
+  color:rgba(255,255,255,.8);font-size:13px;font-weight:600;padding:7px 14px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .15s}
+.cat-btn.selected,.cat-btn:hover{background:rgba(245,166,35,.2);border-color:var(--gold);color:var(--gold)}
+
+/* ══ QUIZ ══ */
+#view-quiz{background:linear-gradient(160deg,#0b1340 0%,#111b55 100%);justify-content:flex-start;padding:0}
+.quiz-top{width:100%;padding:16px 18px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.q-num{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);font-weight:700;white-space:nowrap}
+.progress-bar{flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#f5a623,#ffd97d);border-radius:3px;transition:width .4s ease}
+.score-live{font-size:13px;color:var(--gold-light);font-weight:700;white-space:nowrap}
+
+.quiz-body{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;padding:8px 18px 20px;overflow-y:auto}
+
+.category-tag{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.2);
+  border-radius:20px;padding:4px 14px;margin-bottom:14px;align-self:flex-start}
+
+.question-card{background:linear-gradient(135deg,rgba(26,58,143,.8),rgba(17,27,85,.9));
+  border:1px solid rgba(245,166,35,.2);border-radius:20px;padding:22px 20px;width:100%;margin-bottom:18px;
+  box-shadow:0 8px 32px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05)}
+.question-text{font-size:17px;font-weight:600;line-height:1.5;text-align:center;color:#fff}
+
+.options-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+.opt-btn{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:14px;
+  padding:14px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;color:#fff;
+  display:flex;align-items:center;gap:10px;text-align:left;transition:all .15s;font-size:14px;font-weight:500}
+.opt-btn:active:not(:disabled){transform:scale(.97)}
+.opt-letter{width:32px;height:32px;border-radius:8px;background:rgba(245,166,35,.15);border:1.5px solid rgba(245,166,35,.3);
+  display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;
+  font-size:13px;font-weight:700;color:var(--gold);flex-shrink:0}
+.opt-text{font-size:13px;line-height:1.3}
+.opt-btn.correct{background:rgba(34,197,94,.15);border-color:#22c55e;animation:pulse-green .3s}
+.opt-btn.wrong{background:rgba(239,68,68,.15);border-color:#ef4444}
+.opt-btn:disabled{cursor:default}
+.opt-btn.correct .opt-letter{background:rgba(34,197,94,.3);border-color:#22c55e;color:#4ade80}
+.opt-btn.wrong .opt-letter{background:rgba(239,68,68,.2);border-color:#ef4444;color:#f87171}
+@keyframes pulse-green{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+
+.feedback{margin-top:16px;padding:12px 16px;border-radius:12px;font-size:14px;line-height:1.5;
+  width:100%;display:none}
+.feedback.show{display:block}
+.feedback.ok{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#86efac}
+.feedback.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#fca5a5}
+.feedback strong{display:block;margin-bottom:2px;font-size:15px}
+
+.btn-next{background:linear-gradient(135deg,#f5a623,#e8920a);color:#0b1340;border:none;border-radius:14px;
+  padding:14px;font-size:16px;font-weight:700;cursor:pointer;width:100%;margin-top:14px;
+  font-family:'DM Sans',sans-serif;display:none;box-shadow:0 4px 16px rgba(245,166,35,.35)}
+.btn-next.show{display:block}
+
+/* ══ RESULT ══ */
+#view-result{background:linear-gradient(160deg,#0b1340 0%,#111b55 60%,#0d2060 100%)}
+.result-trophy{font-size:72px;margin-bottom:8px;animation:bounce .6s ease infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-10px)}}
+.result-title{font-family:'Cinzel',serif;font-size:26px;font-weight:900;text-align:center;
+  background:linear-gradient(135deg,#ffd97d,#f5a623);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.result-score{font-size:54px;font-weight:700;color:var(--gold);text-shadow:0 0 30px var(--glow);margin-bottom:4px}
+.result-sub{font-size:15px;color:var(--muted);margin-bottom:8px}
+.result-msg{font-size:16px;color:#e2e8f0;margin-bottom:28px;text-align:center;max-width:280px;line-height:1.5}
+.stars-row{font-size:36px;margin-bottom:24px;letter-spacing:4px}
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<!-- HOME -->
+<div id="view-home" class="view active">
+  
+  <div class="home-title">Palavra<br>de Deus</div>
+  <div class="home-sub">Quiz Bíblico • Teste seus conhecimentos</div>
+
+  <div class="score-badge" id="best-badge">Melhor pontuação: <span id="best-score">0</span></div>
+
+  <div class="category-row">
+    <button class="cat-btn selected" data-cat="all" onclick="selectCat(this)">🌟 Todas</button>
+    <button class="cat-btn" data-cat="AT" onclick="selectCat(this)">📜 Antigo Test.</button>
+    <button class="cat-btn" data-cat="NT" onclick="selectCat(this)">✝ Novo Test.</button>
+    <button class="cat-btn" data-cat="personagens" onclick="selectCat(this)">👤 Personagens</button>
+    <button class="cat-btn" data-cat="lugares" onclick="selectCat(this)">🗺 Lugares</button>
+    <button class="cat-btn" data-cat="milagres" onclick="selectCat(this)">✨ Milagres</button>
+  </div>
+
+  <button class="btn-primary" onclick="startGame()">▶ Jogar Agora</button>
+  <button class="btn-secondary" onclick="startGame(true)">⚡ Modo Rápido (10 perguntas)</button>
+</div>
+
+<!-- QUIZ -->
+<div id="view-quiz" class="view">
+  <div class="quiz-top">
+    <span class="q-num" id="q-num">1/20</span>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:5%"></div></div>
+    <span class="score-live">⭐ <span id="score-live">0</span></span>
+  </div>
+  <div class="quiz-body">
+    <div class="category-tag" id="q-cat">Antigo Testamento</div>
+    <div class="question-card">
+      <div class="question-text" id="q-text">Pergunta...</div>
+    </div>
+    <div class="options-grid" id="options-grid"></div>
+    <div class="feedback" id="feedback"><strong id="fb-title"></strong><span id="fb-text"></span></div>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">Próxima →</button>
+  </div>
+</div>
+
+<!-- RESULTADO -->
+<div id="view-result" class="view">
+  <div class="result-trophy" id="result-trophy">🏆</div>
+  <div class="result-title" id="result-title">Excelente!</div>
+  <div class="result-score" id="result-score">18/20</div>
+  <div class="result-sub" id="result-sub">pontos conquistados</div>
+  <div class="stars-row" id="result-stars">⭐⭐⭐</div>
+  <div class="result-msg" id="result-msg">Você conhece muito bem a Bíblia!</div>
+  <button class="btn-primary" onclick="startGame()">🔄 Jogar Novamente</button>
+  <button class="btn-secondary" onclick="show('view-home')">🏠 Início</button>
+</div>
+
+<script>
+// ── ESTRELAS ──
+(function(){
+  const c=document.getElementById('stars'),ctx=c.getContext('2d');
+  c.width=window.innerWidth;c.height=window.innerHeight;
+  for(let i=0;i<120;i++){
+    const x=Math.random()*c.width,y=Math.random()*c.height,r=Math.random()*1.5+.3;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${Math.random()*.6+.2})`;ctx.fill();
+  }
+})();
+
+// ── PERGUNTAS ──
+const ALL_Q = [
+  // ANTIGO TESTAMENTO
+  {q:"Quem foi engolido por um grande peixe?",opts:["Jonas","Jeremias","Elias","Amós"],a:0,cat:"AT",tag:"milagres",exp:"Jonas 1:17 — Jeová preparou um grande peixe que engoliu Jonas."},
+  {q:"Quantos dias e noites durou o dilúvio sobre a terra?",opts:["40 dias","7 dias","150 dias","365 dias"],a:0,cat:"AT",tag:"AT",exp:"Gênesis 7:12 — A chuva caiu por 40 dias e 40 noites."},
+  {q:"Quem construiu a arca por ordem de Deus?",opts:["Noé","Abraão","Moisés","Davi"],a:0,cat:"AT",tag:"personagens",exp:"Gênesis 6:14 — Deus mandou Noé construir uma arca de madeira de gófer."},
+  {q:"Em qual jardim Adão e Eva viviam?",opts:["Éden","Getsêmani","Siloé","Gibeom"],a:0,cat:"AT",tag:"lugares",exp:"Gênesis 2:15 — Jeová Deus pôs o homem no jardim do Éden."},
+  {q:"Qual animal falou com Eva no jardim do Éden?",opts:["A serpente","O leão","O pombo","O cavalo"],a:0,cat:"AT",tag:"AT",exp:"Gênesis 3:1 — A serpente era o mais astuto de todos os animais selvagens."},
+  {q:"Quantos filhos Jó perdeu de uma vez?",opts:["10","7","3","12"],a:0,cat:"AT",tag:"personagens",exp:"Jó 1:2,19 — Jó tinha 10 filhos, todos mortos quando o vento derrubou a casa."},
+  {q:"Qual era o nome da esposa de Abraão?",opts:["Sara","Rebeca","Raquel","Lia"],a:0,cat:"AT",tag:"personagens",exp:"Gênesis 17:15 — Deus disse: 'Sarai, sua esposa, você chamará Sara'."},
+  {q:"Quem vendeu seu direito de primogênito por um prato de lentilhas?",opts:["Esaú","Isaque","Jacó","Ruben"],a:0,cat:"AT",tag:"personagens",exp:"Gênesis 25:33 — Esaú desprezou seu direito de primogênito."},
+  {q:"Em qual monte Moisés recebeu os Dez Mandamentos?",opts:["Sinai","Carmelo","Horebe","Sião"],a:0,cat:"AT",tag:"lugares",exp:"Êxodo 19:20 — Jeová desceu ao Monte Sinai e chamou Moisés."},
+  {q:"Quantas pragas Deus enviou sobre o Egito?",opts:["10","7","12","9"],a:0,cat:"AT",tag:"AT",exp:"Êxodo 7–12 — Deus enviou 10 pragas sobre o Egito."},
+  {q:"Quem matou o gigante Golias?",opts:["Davi","Saul","Jônatas","Joabe"],a:0,cat:"AT",tag:"personagens",exp:"1 Samuel 17:50 — Davi venceu o filisteu com uma funda e uma pedra."},
+  {q:"Qual rei construiu o primeiro templo em Jerusalém?",opts:["Salomão","Davi","Josias","Ezequias"],a:0,cat:"AT",tag:"lugares",exp:"1 Reis 6:1 — Salomão começou a construir a casa de Jeová."},
+  {q:"Quem foi levado ao céu em um redemoinho sem morrer?",opts:["Elias","Eliseu","Enoque","Jeremias"],a:0,cat:"AT",tag:"milagres",exp:"2 Reis 2:11 — Elias subiu aos céus em um redemoinho de vento."},
+  {q:"Quantos anos tinha Noé quando começou o dilúvio?",opts:["600","500","700","450"],a:0,cat:"AT",tag:"personagens",exp:"Gênesis 7:6 — Noé tinha 600 anos quando as águas do dilúvio inundaram a terra."},
+  {q:"Qual profeta foi atirado na cova dos leões?",opts:["Daniel","Jeremias","Isaías","Ezequiel"],a:0,cat:"AT",tag:"milagres",exp:"Daniel 6:16 — Daniel foi atirado na cova dos leões por orar a Deus."},
+  {q:"Qual mulher colocou o filho num cesto no rio Nilo?",opts:["Joquebede","Maria","Miriã","Séfora"],a:0,cat:"AT",tag:"personagens",exp:"Êxodo 2:3 — A mãe de Moisés pôs o menino numa cesta de junco no Nilo."},
+  {q:"Quem foi o primeiro homicida mencionado na Bíblia?",opts:["Caim","Lameque","Nemrode","Esaú"],a:0,cat:"AT",tag:"personagens",exp:"Gênesis 4:8 — Caim atacou Abel, seu irmão, e o matou."},
+  {q:"Quantos anos Metusalém viveu?",opts:["969","900","850","777"],a:0,cat:"AT",tag:"personagens",exp:"Gênesis 5:27 — Metusalém viveu 969 anos no total."},
+  {q:"Qual cidade foi destruída junto com Sodoma?",opts:["Gomorra","Jericó","Babilônia","Nínive"],a:0,cat:"AT",tag:"lugares",exp:"Gênesis 19:24 — Jeová fez chover enxofre e fogo sobre Sodoma e Gomorra."},
+  {q:"Qual era o nome do pai de Abraão?",opts:["Terá","Noé","Sem","Arpaxade"],a:0,cat:"AT",tag:"personagens",exp:"Gênesis 11:26 — Terá gerou Abrão, Naor e Harã."},
+
+  // NOVO TESTAMENTO
+  {q:"Em que cidade Jesus nasceu?",opts:["Belém","Nazaré","Jerusalém","Cafarnaum"],a:0,cat:"NT",tag:"NT",exp:"Lucas 2:11 — Hoje nasceu para vocês um Salvador na cidade de Davi, Belém."},
+  {q:"Quem batizou Jesus no rio Jordão?",opts:["João Batista","Pedro","Tiago","André"],a:0,cat:"NT",tag:"NT",exp:"Mateus 3:13 — Jesus veio da Galileia até João para ser batizado por ele."},
+  {q:"Quantos apóstolos Jesus escolheu?",opts:["12","7","10","70"],a:0,cat:"NT",tag:"NT",exp:"Lucas 6:13 — Jesus chamou seus discípulos e escolheu 12 deles, a quem chamou apóstolos."},
+  {q:"Qual apóstolo negou Jesus três vezes?",opts:["Pedro","Judas","Tomé","Filipe"],a:0,cat:"NT",tag:"personagens",exp:"Lucas 22:61 — Pedro lembrou-se das palavras do Senhor: 'Antes que o galo cante, você me negará três vezes'."},
+  {q:"Quem traiu Jesus por 30 moedas de prata?",opts:["Judas Iscariotes","Simão","Barrabás","Caifás"],a:0,cat:"NT",tag:"personagens",exp:"Mateus 26:15 — Judas combinou com os chefes dos sacerdotes 30 moedas de prata."},
+  {q:"Em qual monte Jesus proferiu o Sermão da Montanha?",opts:["Monte das Oliveiras","Monte Sinai","Monte Carmelo","Monte Hermom"],a:0,cat:"NT",tag:"lugares",exp:"Mateus 5:1 — Vendo as multidões, Jesus subiu ao monte e ensinou seus discípulos."},
+  {q:"Qual milagre Jesus realizou na cidade de Caná?",opts:["Transformou água em vinho","Multiplicou pães","Curou um cego","Ressuscitou Lázaro"],a:0,cat:"NT",tag:"milagres",exp:"João 2:9 — O capataz provou a água transformada em vinho."},
+  {q:"Quantos dias Lázaro estava morto quando Jesus o ressuscitou?",opts:["4","3","7","2"],a:0,cat:"NT",tag:"milagres",exp:"João 11:39 — Marta disse: 'Senhor, já cheira mal, pois faz quatro dias'."},
+  {q:"Quem escreveu a maior parte das cartas do Novo Testamento?",opts:["Paulo","Pedro","João","Tiago"],a:0,cat:"NT",tag:"personagens",exp:"Paulo escreveu 14 cartas do Novo Testamento, de Romanos a Hebreus."},
+  {q:"Em qual mar Jesus andou sobre as águas?",opts:["Mar da Galileia","Mar Vermelho","Mar Morto","Mar Mediterrâneo"],a:0,cat:"NT",tag:"milagres",exp:"Mateus 14:25 — Jesus foi andando sobre o mar em direção aos discípulos."},
+  {q:"Qual era a profissão de Pedro antes de seguir Jesus?",opts:["Pescador","Carpinteiro","Cobrador de impostos","Pastor"],a:0,cat:"NT",tag:"personagens",exp:"Mateus 4:18 — Simão, chamado Pedro, lançava uma rede ao mar, pois era pescador."},
+  {q:"Quem era Zaqueu?",opts:["Cobrador de impostos","Pescador","Sacerdote","Fariseu"],a:0,cat:"NT",tag:"personagens",exp:"Lucas 19:2 — Havia um homem chamado Zaqueu, que era chefe dos cobradores de impostos."},
+  {q:"Qual era a profissão de José, pai adotivo de Jesus?",opts:["Carpinteiro","Pescador","Pastor","Médico"],a:0,cat:"NT",tag:"personagens",exp:"Mateus 13:55 — Não é este o filho do carpinteiro?"},
+  {q:"Em qual cidade Paulo nasceu?",opts:["Tarso","Antioquia","Éfeso","Roma"],a:0,cat:"NT",tag:"lugares",exp:"Atos 21:39 — Paulo disse: 'Sou judeu, de Tarso da Cilícia, cidadão de uma cidade famosa'."},
+  {q:"Quantos pães e peixes Jesus usou para alimentar 5.000 homens?",opts:["5 pães e 2 peixes","7 pães e 3 peixes","2 pães e 5 peixes","12 pães e 12 peixes"],a:0,cat:"NT",tag:"milagres",exp:"João 6:9 — Aqui está um menino com cinco pães de cevada e dois peixinhos."},
+  {q:"Qual discípulo disse 'Se eu não vir, não acreditarei'?",opts:["Tomé","Pedro","André","Filipe"],a:0,cat:"NT",tag:"personagens",exp:"João 20:25 — Tomé disse: 'Se eu não vir as marcas dos pregos, não acreditarei'."},
+  {q:"Onde Jesus foi tentado por Satanás durante 40 dias?",opts:["No deserto","No monte","No jardim","No templo"],a:0,cat:"NT",tag:"NT",exp:"Lucas 4:1,2 — Jesus, cheio de espírito santo, foi guiado pelo espírito para o deserto por 40 dias."},
+  {q:"Qual é o versículo mais curto da Bíblia?",opts:['"Jesus chorou" (João 11:35)',"'Alegrem-se sempre' (1Ts 5:16)","'Ora, Deus é fiel' (1Co 1:9)","'Amém' (Ap 22:21)"],a:0,cat:"NT",tag:"NT",exp:"João 11:35 — 'Jesus chorou' — o versículo mais curto de toda a Bíblia."},
+  {q:"Em qual cidade Paulo e Silas foram presos e houve um terremoto?",opts:["Filipos","Corinto","Éfeso","Tessalônica"],a:0,cat:"NT",tag:"lugares",exp:"Atos 16:23,26 — Um grande terremoto abalou as fundações da prisão em Filipos."},
+  {q:"Qual é o último livro da Bíblia?",opts:["Apocalipse","Judas","3 João","Hebreus"],a:0,cat:"NT",tag:"NT",exp:"O Apocalipse, também chamado Revelação, é o último livro da Bíblia."},
+];
+
+// ── STATE ──
+let questions=[], idx=0, score=0, total=20, selectedCat='all', quickMode=false;
+
+// ── CATEGORIES ──
+function selectCat(btn){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedCat=btn.dataset.cat;
+}
+
+// ── FILTER + SHUFFLE ──
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5)}
+
+function getQuestions(){
+  let pool=ALL_Q;
+  if(selectedCat==='personagens') pool=ALL_Q.filter(q=>q.tag==='personagens');
+  else if(selectedCat==='lugares') pool=ALL_Q.filter(q=>q.tag==='lugares');
+  else if(selectedCat==='milagres') pool=ALL_Q.filter(q=>q.tag==='milagres');
+  else if(selectedCat==='AT') pool=ALL_Q.filter(q=>q.cat==='AT');
+  else if(selectedCat==='NT') pool=ALL_Q.filter(q=>q.cat==='NT');
+  if(pool.length===0) pool=ALL_Q;
+  return shuffle(pool).slice(0,total);
+}
+
+// ── GAME ──
+function startGame(quick=false){
+  quickMode=quick;
+  total=quick?10:20;
+  questions=getQuestions();
+  idx=0;score=0;
+  document.getElementById('score-live').textContent='0';
+  show('view-quiz');
+  renderQuestion();
+}
+
+const CAT_LABELS={'AT':'Antigo Testamento','NT':'Novo Testamento','personagens':'Personagens','lugares':'Lugares','milagres':'Milagres'};
+
+function renderQuestion(){
+  const q=questions[idx];
+  const pct=Math.round((idx/total)*100);
+  document.getElementById('q-num').textContent=(idx+1)+'/'+total;
+  document.getElementById('progress-fill').style.width=pct+'%';
+  document.getElementById('q-cat').textContent=(q.cat==='AT'?'📜':'✝')+' '+(CAT_LABELS[q.tag]||CAT_LABELS[q.cat]);
+  document.getElementById('q-text').textContent=q.q;
+
+  // Shuffle options keeping track of correct index
+  const letters=['A','B','C','D'];
+  const indexed=q.opts.map((o,i)=>({text:o,orig:i}));
+  const shuffled=shuffle(indexed);
+  const correctShuffled=shuffled.findIndex(o=>o.orig===q.a);
+
+  const grid=document.getElementById('options-grid');
+  grid.innerHTML='';
+  shuffled.forEach((o,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt-btn';
+    btn.innerHTML=`<span class="opt-letter">${letters[i]}</span><span class="opt-text">${o.text}</span>`;
+    btn.onclick=()=>answer(btn,i===correctShuffled,q.exp,grid);
+    grid.appendChild(btn);
+  });
+
+  const fb=document.getElementById('feedback');
+  fb.className='feedback';fb.style.display='none';
+  document.getElementById('btn-next').className='btn-next';
+}
+
+function answer(btn,correct,exp,grid){
+  grid.querySelectorAll('.opt-btn').forEach(b=>{b.disabled=true;});
+  const fb=document.getElementById('feedback');
+
+  if(correct){
+    btn.classList.add('correct');
+    score++;
+    document.getElementById('score-live').textContent=score;
+    document.getElementById('fb-title').textContent='✅ Correto!';
+    document.getElementById('fb-text').textContent=exp;
+    fb.className='feedback ok show';fb.style.display='block';
+  } else {
+    btn.classList.add('wrong');
+    // Show correct
+    grid.querySelectorAll('.opt-btn').forEach(b=>{
+      if(!b.classList.contains('wrong')) b.classList.add('correct');
+    });
+    document.getElementById('fb-title').textContent='❌ Incorreto';
+    document.getElementById('fb-text').textContent=exp;
+    fb.className='feedback err show';fb.style.display='block';
+  }
+  document.getElementById('btn-next').className='btn-next show';
+}
+
+function nextQuestion(){
+  idx++;
+  if(idx>=total){showResult();return;}
+  renderQuestion();
+}
+
+function showResult(){
+  const pct=score/total;
+  let trophy='🏆',title='',msg='',stars='';
+  if(pct>=.9){trophy='🏆';title='Campeão Bíblico!';msg='Incrível! Você conhece a Palavra de Deus profundamente. Que exemplo!';stars='⭐⭐⭐'}
+  else if(pct>=.7){trophy='🎖';title='Muito bem!';msg='Ótimo conhecimento bíblico! Continue estudando e você chegará ainda mais longe.';stars='⭐⭐'}
+  else if(pct>=.5){trophy='📖';title='Bom esforço!';msg='Você está no caminho certo! Continue lendo a Bíblia todos os dias.';stars='⭐'}
+  else{trophy='💪';title='Continue tentando!';msg='A Bíblia é um tesouro. Quanto mais você a lê, mais ela transforma sua vida!';stars='🌱'}
+
+  document.getElementById('result-trophy').textContent=trophy;
+  document.getElementById('result-title').textContent=title;
+  document.getElementById('result-score').textContent=score+'/'+total;
+  document.getElementById('result-sub').textContent=`de ${total} perguntas respondidas`;
+  document.getElementById('result-stars').textContent=stars;
+  document.getElementById('result-msg').textContent=msg;
+  // Best score
+  const best=parseInt(localStorage.getItem('palavraDeusBest')||'0');
+  if(score>best){localStorage.setItem('palavraDeusBest',score);}
+  updateBest();
+  show('view-result');
+}
+
+function updateBest(){
+  const best=parseInt(localStorage.getItem('palavraDeusBest')||'0');
+  if(best>0){
+    document.getElementById('best-score').textContent=best;
+    document.getElementById('best-badge').style.display='block';
+  }
+}
+
+function show(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='view-home')updateBest();
+}
+
+updateBest();
+</script>
+</body>
+</html>
